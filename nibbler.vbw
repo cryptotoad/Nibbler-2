@@ -1,0 +1,12 @@
+frmMain = 50, 50, 1130, 583, , 50, 50, 1214, 747, C
+modFunctions = 100, 100, 1180, 633, 
+clsPacketFilter = 50, 50, 1214, 387, 
+frmFilters = 150, 150, 1230, 683, , 150, 150, 1230, 683, C
+youveGotMail = 100, 100, 1264, 437, 
+frmAbout = 0, 0, 0, 0, C, 25, 25, 1189, 362, C
+frmOptions = 0, 0, 0, 0, C, 100, 100, 1180, 633, C
+frmSploitzzz = 0, 0, 0, 0, C, 125, 125, 1205, 658, C
+clsSploit = 75, 75, 1239, 412, 
+modSploit = 25, 25, 1189, 362, 
+modCryptoAlgs = 200, 200, 1280, 733, 
+modSocks = 0, 0, 1139, 412, Z
