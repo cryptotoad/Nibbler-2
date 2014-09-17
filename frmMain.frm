@@ -179,10 +179,10 @@ Begin VB.Form frmMain
       Width           =   735
    End
    Begin VB.TextBox tEncKey 
-      Height          =   1815
+      Height          =   1695
       Left            =   120
       TabIndex        =   9
-      Top             =   2280
+      Top             =   2400
       Width           =   3255
    End
    Begin VB.CommandButton Command5 
@@ -360,7 +360,7 @@ Begin VB.Form frmMain
       Height          =   255
       Left            =   120
       TabIndex        =   10
-      Top             =   2040
+      Top             =   2160
       Width           =   3255
    End
    Begin VB.Label Label7 
