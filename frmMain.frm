@@ -1,6 +1,7 @@
 VERSION 5.00
 Object = "{248DD890-BB45-11CF-9ABC-0080C7E7B78D}#1.0#0"; "MSWINSCK.OCX"
 Object = "{3B7C8863-D78F-101B-B9B5-04021C009402}#1.2#0"; "RICHTX32.OCX"
+Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
 Begin VB.Form frmMain 
    BorderStyle     =   1  'Fixed Single
    Caption         =   "Nibbler 0.4a - havoc.ws"
@@ -14,6 +15,13 @@ Begin VB.Form frmMain
    ScaleHeight     =   10215
    ScaleWidth      =   11640
    StartUpPosition =   3  'Windows Default
+   Begin MSComDlg.CommonDialog annoyingPopups 
+      Left            =   8400
+      Top             =   9720
+      _ExtentX        =   847
+      _ExtentY        =   847
+      _Version        =   393216
+   End
    Begin MSWinsockLib.Winsock sckConnection 
       Left            =   10800
       Tag             =   "handles HTTP Async without errors"
@@ -51,11 +59,6 @@ Begin VB.Form frmMain
       _ExtentX        =   741
       _ExtentY        =   741
       _Version        =   393216
-   End
-   Begin VB.Timer Timer1 
-      Interval        =   250
-      Left            =   3120
-      Top             =   1560
    End
    Begin VB.CommandButton Command9 
       Caption         =   "Clear"
@@ -97,6 +100,7 @@ Begin VB.Form frmMain
          _ExtentX        =   9551
          _ExtentY        =   6588
          _Version        =   393217
+         Enabled         =   -1  'True
          ScrollBars      =   2
          TextRTF         =   $"frmMain.frx":15371
       End
@@ -109,6 +113,7 @@ Begin VB.Form frmMain
          _ExtentX        =   9551
          _ExtentY        =   6588
          _Version        =   393217
+         Enabled         =   -1  'True
          ScrollBars      =   2
          TextRTF         =   $"frmMain.frx":153F3
       End
@@ -227,6 +232,11 @@ Begin VB.Form frmMain
       TabIndex        =   16
       Top             =   0
       Width           =   7935
+      Begin VB.Timer tmrColor 
+         Interval        =   250
+         Left            =   1920
+         Top             =   3480
+      End
       Begin RichTextLib.RichTextBox asciibox 
          Height          =   1695
          Left            =   120
@@ -236,6 +246,7 @@ Begin VB.Form frmMain
          _ExtentX        =   13361
          _ExtentY        =   2990
          _Version        =   393217
+         Enabled         =   -1  'True
          ScrollBars      =   2
          TextRTF         =   $"frmMain.frx":15475
       End
@@ -280,6 +291,7 @@ Begin VB.Form frmMain
          _ExtentX        =   13361
          _ExtentY        =   2778
          _Version        =   393217
+         Enabled         =   -1  'True
          ScrollBars      =   2
          TextRTF         =   $"frmMain.frx":154F7
       End
@@ -309,6 +321,7 @@ Begin VB.Form frmMain
       _ExtentX        =   13361
       _ExtentY        =   2990
       _Version        =   393217
+      Enabled         =   -1  'True
       ScrollBars      =   2
       TextRTF         =   $"frmMain.frx":15579
    End
@@ -321,6 +334,7 @@ Begin VB.Form frmMain
       _ExtentX        =   9551
       _ExtentY        =   6588
       _Version        =   393217
+      Enabled         =   -1  'True
       ScrollBars      =   2
       TextRTF         =   $"frmMain.frx":155FB
    End
@@ -430,6 +444,18 @@ Public outboundPhone As youveGotMail
 
 
 
+
+Private Sub chkHoneypot_Click()
+
+    If chkHoneypot.Value = 1 Then
+        annoyingPopups.DialogTitle = "Select output file"
+        annoyingPopups.FileName = "output.nib"
+        annoyingPopups.Filter = "Nibbler Output File (*.nib)"
+        annoyingPopups.InitDir = App.Path
+        annoyingPopups.ShowSave
+    End If
+    
+End Sub
 
 Private Sub Command1_Click()
 
@@ -624,7 +650,7 @@ Private Sub iListen_DataArrival(ByVal bytesTotal As Long)
         Dim gelatin As Integer
         gelatin = FreeFile
         
-        Open App.Path & "/output.nib" For Append As #gelatin
+        Open App.Path & "/" & annoyingPopups.FileName For Append As #gelatin
             Print #gelatin, "[BOT]" & botStream & vbCrLf
         Close #gelatin
     End If
@@ -734,7 +760,7 @@ On Error GoTo errorz:
         Dim gelatin As Integer
         gelatin = FreeFile
         
-        Open App.Path & "/output.nib" For Append As #gelatin
+        Open App.Path & "/" & annoyingPopups.FileName For Append As #gelatin
             Print #gelatin, "[SERV]" & clientStream & vbCrLf
         Close #gelatin
     End If
@@ -803,3 +829,5 @@ Private Sub Timer1_Timer()
         lblStatus.Caption = "Idle"
     End If
 End Sub
+
+
