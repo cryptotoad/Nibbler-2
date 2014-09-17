@@ -14,13 +14,29 @@ Begin VB.Form frmMain
    ScaleHeight     =   10215
    ScaleWidth      =   11640
    StartUpPosition =   3  'Windows Default
+   Begin MSWinsockLib.Winsock sckConnection 
+      Left            =   10800
+      Tag             =   "handles HTTP Async without errors"
+      Top             =   9600
+      _ExtentX        =   741
+      _ExtentY        =   741
+      _Version        =   393216
+   End
+   Begin VB.CheckBox ckHTTP 
+      Caption         =   "HTTP Async"
+      Height          =   255
+      Left            =   1680
+      TabIndex        =   37
+      Top             =   1560
+      Width           =   1455
+   End
    Begin VB.CheckBox chkHoneypot 
       Caption         =   "Honeypot Mode"
       Height          =   255
       Left            =   120
       TabIndex        =   36
       Top             =   1560
-      Width           =   3015
+      Width           =   1455
    End
    Begin MSWinsockLib.Winsock iSpeak 
       Left            =   11280
@@ -81,7 +97,6 @@ Begin VB.Form frmMain
          _ExtentX        =   9551
          _ExtentY        =   6588
          _Version        =   393217
-         Enabled         =   -1  'True
          ScrollBars      =   2
          TextRTF         =   $"frmMain.frx":15371
       End
@@ -94,7 +109,6 @@ Begin VB.Form frmMain
          _ExtentX        =   9551
          _ExtentY        =   6588
          _Version        =   393217
-         Enabled         =   -1  'True
          ScrollBars      =   2
          TextRTF         =   $"frmMain.frx":153F3
       End
@@ -222,7 +236,6 @@ Begin VB.Form frmMain
          _ExtentX        =   13361
          _ExtentY        =   2990
          _Version        =   393217
-         Enabled         =   -1  'True
          ScrollBars      =   2
          TextRTF         =   $"frmMain.frx":15475
       End
@@ -267,7 +280,6 @@ Begin VB.Form frmMain
          _ExtentX        =   13361
          _ExtentY        =   2778
          _Version        =   393217
-         Enabled         =   -1  'True
          ScrollBars      =   2
          TextRTF         =   $"frmMain.frx":154F7
       End
@@ -297,7 +309,6 @@ Begin VB.Form frmMain
       _ExtentX        =   13361
       _ExtentY        =   2990
       _Version        =   393217
-      Enabled         =   -1  'True
       ScrollBars      =   2
       TextRTF         =   $"frmMain.frx":15579
    End
@@ -310,7 +321,6 @@ Begin VB.Form frmMain
       _ExtentX        =   9551
       _ExtentY        =   6588
       _Version        =   393217
-      Enabled         =   -1  'True
       ScrollBars      =   2
       TextRTF         =   $"frmMain.frx":155FB
    End
@@ -383,6 +393,7 @@ Begin VB.Form frmMain
       Caption         =   "Options"
       Begin VB.Menu mHoney 
          Caption         =   "Configure Honeypot"
+         Enabled         =   0   'False
       End
       Begin VB.Menu mFilters 
          Caption         =   "Configure Packet Filters"
@@ -451,9 +462,10 @@ End Sub
 Private Sub Command5_Click()
 
     
-    If iListen.State <> sckListening And iListen.State <> sckConnected Then
-        iListen.LocalPort = txtLocal.Text
-        iListen.Listen
+    If sckConnection.State <> sckListening And sckConnection.State <> sckConnected Then
+        sckConnection.Close
+        sckConnection.LocalPort = txtLocal.Text
+        sckConnection.Listen
     End If
 
 End Sub
@@ -481,6 +493,7 @@ End Sub
 Private Sub Command7_Click()
     iSpeak.Close
     iListen.Close
+    sckConnection.Close
     Shape1.BackColor = &HFF&
     
 End Sub
@@ -517,9 +530,11 @@ End
 End Sub
 
 Private Sub iListen_Close()
-'MsgBox "Server seems to have crashed. Please restart Nibbler and the server."
-    Shape1.BackColor = &HFF&
-
+    
+    If ckHTTP.Value = 1 Then
+        Command5_Click
+    End If
+    
 End Sub
 
 Private Sub iListen_Connect()
@@ -590,9 +605,18 @@ Private Sub iListen_DataArrival(ByVal bytesTotal As Long)
     
     Else
     
+        If ckHTTP.Value = 1 Then
+            iSpeak.Connect
+        
+            text1.Text = text1.Text & vbNewLine & "[BOT] " & botStream
+    
+            text2.Text = text2.Text & vbNewLine & "[BOT] " & StringToHex(botStream)
+            
+        Else
         text1.Text = text1.Text & vbNewLine & "[HOLD][BOT] " & botStream
     
         text2.Text = text2.Text & vbNewLine & "[HOLD][BOT] " & StringToHex(botStream)
+        End If
 
     End If
     
@@ -674,7 +698,7 @@ End Function
 
 
 Private Sub iSpeak_DataArrival(ByVal bytesTotal As Long)
-
+On Error GoTo errorz:
     
     iSpeak.GetData clientStream
     'iSpeak.GetData clientStream2
@@ -728,7 +752,8 @@ Private Sub iSpeak_DataArrival(ByVal bytesTotal As Long)
         inboundPhone.myData = clientStream
         inboundPhone.pushMessage
     End If
-    
+errorz:
+    Debug.Print "Error attempting to send data"
     
     
 End Sub
@@ -755,6 +780,15 @@ End Sub
 
 Private Sub mnuOptions_Click()
     frmOptions.Show
+End Sub
+
+Private Sub sckConnection_ConnectionRequest(ByVal requestID As Long)
+    If iListen.State <> sckClosed Then
+          iListen.Close
+    End If
+    
+    iListen.Accept (requestID)
+    Shape1.BackColor = &HFF00&
 End Sub
 
 Private Sub Timer1_Timer()
