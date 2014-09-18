@@ -4,7 +4,7 @@ Object = "{3B7C8863-D78F-101B-B9B5-04021C009402}#1.2#0"; "RICHTX32.OCX"
 Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
 Begin VB.Form frmMain 
    BorderStyle     =   1  'Fixed Single
-   Caption         =   "Nibbler 0.4a - havoc.ws"
+   Caption         =   "Nibbler 0.4.1a - Malware Analysis Suite - havoc.ws"
    ClientHeight    =   10215
    ClientLeft      =   150
    ClientTop       =   780
@@ -15,6 +15,14 @@ Begin VB.Form frmMain
    ScaleHeight     =   10215
    ScaleWidth      =   11640
    StartUpPosition =   3  'Windows Default
+   Begin VB.CheckBox chkWormhole 
+      Caption         =   "Wormhole Mode"
+      Height          =   255
+      Left            =   120
+      TabIndex        =   38
+      Top             =   1800
+      Width           =   2055
+   End
    Begin MSComDlg.CommonDialog annoyingPopups 
       Left            =   8400
       Top             =   9720
@@ -55,7 +63,7 @@ Begin VB.Form frmMain
    End
    Begin MSWinsockLib.Winsock iListen 
       Left            =   11280
-      Top             =   9240
+      Top             =   9120
       _ExtentX        =   741
       _ExtentY        =   741
       _Version        =   393216
@@ -100,7 +108,6 @@ Begin VB.Form frmMain
          _ExtentX        =   9551
          _ExtentY        =   6588
          _Version        =   393217
-         Enabled         =   -1  'True
          ScrollBars      =   2
          TextRTF         =   $"frmMain.frx":15371
       End
@@ -113,7 +120,6 @@ Begin VB.Form frmMain
          _ExtentX        =   9551
          _ExtentY        =   6588
          _Version        =   393217
-         Enabled         =   -1  'True
          ScrollBars      =   2
          TextRTF         =   $"frmMain.frx":153F3
       End
@@ -246,7 +252,6 @@ Begin VB.Form frmMain
          _ExtentX        =   13361
          _ExtentY        =   2990
          _Version        =   393217
-         Enabled         =   -1  'True
          ScrollBars      =   2
          TextRTF         =   $"frmMain.frx":15475
       End
@@ -291,7 +296,6 @@ Begin VB.Form frmMain
          _ExtentX        =   13361
          _ExtentY        =   2778
          _Version        =   393217
-         Enabled         =   -1  'True
          ScrollBars      =   2
          TextRTF         =   $"frmMain.frx":154F7
       End
@@ -321,7 +325,6 @@ Begin VB.Form frmMain
       _ExtentX        =   13361
       _ExtentY        =   2990
       _Version        =   393217
-      Enabled         =   -1  'True
       ScrollBars      =   2
       TextRTF         =   $"frmMain.frx":15579
    End
@@ -334,7 +337,6 @@ Begin VB.Form frmMain
       _ExtentX        =   9551
       _ExtentY        =   6588
       _Version        =   393217
-      Enabled         =   -1  'True
       ScrollBars      =   2
       TextRTF         =   $"frmMain.frx":155FB
    End
@@ -396,6 +398,12 @@ Begin VB.Form frmMain
    End
    Begin VB.Menu mFile 
       Caption         =   "File"
+      Begin VB.Menu mDump 
+         Caption         =   "Dump Process"
+      End
+      Begin VB.Menu mCrypter 
+         Caption         =   "Strip Crypter (process dump)"
+      End
       Begin VB.Menu mnuExploit 
          Caption         =   "Craft Exploit"
       End
@@ -445,6 +453,10 @@ Public outboundPhone As youveGotMail
 
 
 
+Private Sub Check2_Click()
+
+End Sub
+
 Private Sub chkHoneypot_Click()
 
     If chkHoneypot.Value = 1 Then
@@ -457,10 +469,16 @@ Private Sub chkHoneypot_Click()
     
 End Sub
 
+Private Sub chkWormhole_Click()
+    If chkWormhole.Value = 1 Then
+        frmWormhole.Show
+    End If
+End Sub
+
 Private Sub Command1_Click()
 
 If txtIP.Text = "127.0.0.1" And txtPort.Text = txtLocal.Text Then
-    MsgBox "You cannot plug a power strip into itself."
+    frmPower.Show
     Exit Sub
 End If
 
@@ -614,7 +632,10 @@ End Sub
 Private Sub iListen_DataArrival(ByVal bytesTotal As Long)
     iListen.GetData botStream
     
-    botStream = applyCrypto(botStream, 0)
+    If frmWormhole.entryPoint <> True Or chkWormhole.Value = 0 Then
+        'if we're the exit node or wormhole mode is disabled, decrypt data
+        botStream = applyCrypto(botStream, 0)
+    End If
     
 
     If strData = Chr(0) Then                    'server says c'mon in
@@ -632,6 +653,9 @@ Private Sub iListen_DataArrival(ByVal bytesTotal As Long)
     Else
     
         If ckHTTP.Value = 1 Then
+            iSpeak.Close
+            iSpeak.RemoteHost = txtIP.Text
+            iSpeak.RemotePort = txtPort.Text
             iSpeak.Connect
         
             text1.Text = text1.Text & vbNewLine & "[BOT] " & botStream
@@ -650,14 +674,17 @@ Private Sub iListen_DataArrival(ByVal bytesTotal As Long)
         Dim gelatin As Integer
         gelatin = FreeFile
         
-        Open App.Path & "/" & annoyingPopups.FileName For Append As #gelatin
+        Open annoyingPopups.FileName For Append As #gelatin
             Print #gelatin, "[BOT]" & botStream & vbCrLf
         Close #gelatin
     End If
     
     'text3.Text = Form2.text3.Text & vbNewLine & "[BOT] " & StrConv(botStream, vbFromUnicode)
+    If frmWormhole.entryPoint = True Or chkWormhole.Value = 0 Then
+        'if we're the entry point we want to encrypt the data on its way out
+        botStream = applyCrypto(botStream, 1)
+    End If
     
-    botStream = applyCrypto(botStream, 1)
     If iSpeak.State = sckConnected Then
         iSpeak.SendData (botStream)
     Else
@@ -729,6 +756,7 @@ On Error GoTo errorz:
     iSpeak.GetData clientStream
     'iSpeak.GetData clientStream2
     
+
     
     If clientStream = Chr(0) Then               'server says c'mon in
         Exit Sub
@@ -736,7 +764,12 @@ On Error GoTo errorz:
     
     'Debug.Print "****" & clientStream
     
-    clientStream = applyCrypto(clientStream, 0) ' run decryption
+    If frmWormhole.entryPoint = False Or chkWormhole.Value = True Then
+        'if we're the exit node or if wormhole mode is disabled
+        clientStream = applyCrypto(clientStream, 0) ' run decryption
+    End If
+    
+    
     
     'Debug.Print "****" & clientStream
     
@@ -760,7 +793,7 @@ On Error GoTo errorz:
         Dim gelatin As Integer
         gelatin = FreeFile
         
-        Open App.Path & "/" & annoyingPopups.FileName For Append As #gelatin
+        Open annoyingPopups.FileName For Append As #gelatin
             Print #gelatin, "[SERV]" & clientStream & vbCrLf
         Close #gelatin
     End If
@@ -769,7 +802,9 @@ On Error GoTo errorz:
     
     'Debug.Print clientStream
     
-    clientStream = applyCrypto(clientStream, 1) ' run encryption so we can pass the stream along as if it was never messed with :P
+    If chkWormhole.Value = 0 Or frmWormhole.entryPoint = True Then
+        clientStream = applyCrypto(clientStream, 1) ' run encryption so we can pass the stream along as if it was never messed with :P
+    End If
     
     If iListen.State = sckConnected Then
         iListen.SendData (clientStream)

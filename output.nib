@@ -25,3 +25,13 @@ Server: GFE/2.0
   <p>Your client has issued a malformed or illegal request.  <ins>That’s all we know.</ins>
 
 
+[BOT]GET / HTTP/1.1
+Host: 127.0.0.1:999
+Connection: keep-alive
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36 OPR/24.0.1558.61
+Accept-Encoding: gzip,deflate,lzma,sdch
+Accept-Language: en-US,en;q=0.8
+
+
+
